@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - All Internships</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">All Internships</h1>
+                <p class="text-gray-500 text-sm mt-1 mb-5" id="avail-text">0 opportunities available</p>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative flex-1 max-w-lg">
+                        <i class="fas fa-search absolute left-4 top-3 text-gray-400"></i>
+                        <input type="text" id="search-input" onkeyup="filterInternships()" placeholder="Search by title or company..." class="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm text-gray-700 bg-white">
+                    </div>
+                    <button class="bg-white border border-gray-200 text-gray-600 px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-gray-50 shadow-sm transition">
+                        <i class="fas fa-sliders-h text-gray-400"></i> Filters
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6" id="internships-container">
+                <!-- Cards injected here -->
+            </div>
+
+            <div id="no-results" class="hidden text-center py-16">
+                <i class="fas fa-search text-gray-300 text-5xl mb-3"></i>
+                <h2 class="text-lg font-bold text-gray-700">No internships found</h2>
+                <p class="text-gray-500 text-sm mt-1">Try adjusting your search criteria.</p>
+            </div>
+
+            <div id="save-msg" class="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg transform transition-transform translate-y-20 opacity-0 flex items-center gap-3 font-medium text-sm z-50">
+                <i class="fas fa-check-circle text-green-400 text-lg"></i> Successfully Applied!
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        let allInternships = [];
+        let userApplications = [];
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = requireAuth('user');
+            if(!currentUser) return;
+
+            initLayout('user', 'internships', '');
+
+            allInternships = getDB('internhub_internships');
+            userApplications = getDB('internhub_applications').filter(a => a.userId === currentUser.id);
+            
+            document.getElementById('avail-text').innerText = `${allInternships.length} opportunities available`;
+
+            // Calculate matches inside objects
+            allInternships = allInternships.map(internship => {
+                const matchPercentage = calculateMatch(currentUser.skills, internship.skills);
+                return { ...internship, matchPercentage };
+            });
+
+            renderInternships(allInternships);
+        });
+
+        function filterInternships() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allInternships.filter(i => 
+                i.title.toLowerCase().includes(query) || 
+                i.companyName.toLowerCase().includes(query)
+            );
+            renderInternships(filtered);
+        }
+
+        function renderInternships(data) {
+            const container = document.getElementById('internships-container');
+            container.innerHTML = '';
+
+            if(data.length === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('no-results').classList.add('hidden');
+            }
+
+            data.forEach(internship => {
+                const applied = userApplications.some(a => a.internshipId === internship.id);
+                const matchClass = getMatchCircleClass(internship.matchPercentage);
+                
+                const skillsHtml = (internship.skills || []).map(skill => {
+                    const hasSkill = currentUser.skills && currentUser.skills.some(os => os.toLowerCase() === skill.toLowerCase());
+                    return `<span class="px-2 py-0.5 text-[10px] font-bold rounded shadow-sm ${hasSkill ? 'bg-[#10b981] text-white' : 'bg-red-500 text-white'}">${skill}</span>`;
+                }).join('');
+
+                const actionHtml = applied 
+                    ? `<div class="bg-gray-100 text-[#10b981] border border-gray-200 px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5"><i class="fas fa-check"></i> Applied</div>`
+                    : `<button onclick="apply('${internship.id}', '${internship.title.replace(/'/g, "\\'")}', '${internship.companyId}', '${internship.companyName.replace(/'/g, "\\'")}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 transition shadow-sm"><i class="fas fa-paper-plane text-[10px]"></i> Apply Now</button>`;
+
+                const typeTagHtml = internship.workType 
+                    ? `<div class="bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1.5 rounded text-[11px] font-semibold">${internship.workType}</div>` 
+                    : '';
+                
+                const isExternal = internship.type === 'External';
+
+                const cardHtml = `
+                    <div class="bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md rounded-md p-5 transition flex flex-col h-full relative">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 bg-gray-50 rounded flex items-center justify-center font-bold text-gray-600 text-lg border border-gray-200 shadow-sm">
+                                    ${internship.companyName.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-sm leading-tight">${internship.title}</h3>
+                                    <p class="text-gray-500 text-xs mt-0.5">${internship.companyName}</p>
+                                </div>
+                            </div>
+                            <div class="match-circle ${matchClass} shrink-0 bg-white ml-2 shadow-sm border-[3px] w-10 h-10 text-xs z-10">
+                                ${internship.matchPercentage}%
+                            </div>
+                        </div>
+
+                        ${isExternal ? `
+                            <p class="text-xs text-blue-600 font-medium mb-3"><i class="fas fa-external-link-alt mr-1"></i> External Opportunity</p>
+                        ` : `
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-500 mb-4 font-medium">
+                                <div class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-red-500"></i> ${internship.location}</div>
+                                <div class="flex items-center gap-1.5"><i class="far fa-clock text-gray-400"></i> ${internship.duration}</div>
+                                <div class="flex items-center gap-1.5"><i class="fas fa-rupee-sign text-yellow-500"></i> ${internship.stipend}</div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mb-5 mt-auto">
+                                ${skillsHtml}
+                            </div>
+                        `}
+                        
+                        <div class="flex items-center gap-2 mt-auto pt-3 border-t border-gray-50">
+                            ${isExternal 
+                                ? `<a href="${internship.link}" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow-sm">Apply Externally <i class="fas fa-external-link-alt ml-1 text-[10px]"></i></a>`
+                                : actionHtml
+                            }
+                            ${!isExternal ? typeTagHtml : ''}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function apply(iId, iTitle, cId, cName) {
+            const applications = getDB('internhub_applications');
+            
+            applications.push({
+                id: generateId(),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                internshipId: iId,
+                internshipTitle: iTitle,
+                companyId: cId,
+                companyName: cName,
+                date: formatDate(new Date().toISOString()),
+                status: 'Applied'
+            });
+            
+            setDB('internhub_applications', applications);
+            
+            const toast = document.getElementById('save-msg');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+            
+            // update local data to toggle to Applied immediately
+            userApplications = getDB('internhub_applications').filter(a => a.userId === currentUser.id);
+            filterInternships(); // re-render
+        }
+    </script>
+</body>
+</html>

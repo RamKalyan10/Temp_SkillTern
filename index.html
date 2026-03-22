@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-[#f4f7f9] flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="mb-8 text-center">
+        <div class="flex items-center justify-center gap-3 mb-2">
+            <i class="fas fa-graduation-cap text-3xl text-gray-800"></i>
+            <h1 class="text-4xl font-extrabold text-[#2563eb]">InternHub</h1>
+            <i class="fas fa-graduation-cap text-3xl text-orange-400"></i>
+        </div>
+        <p class="text-gray-500 italic text-sm">~ the best internship website ~</p>
+    </div>
+    
+    <div class="bg-white border border-blue-600 rounded-lg p-8 w-full max-w-[480px] shadow-sm">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">Login</h2>
+        <p class="text-gray-500 text-sm mb-6">Enter your details to continue</p>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Select Role:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selectRole('user')" id="role-user" class="role-btn bg-blue-600 text-white border border-blue-600 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-user text-xs"></i> User
+                    </button>
+                    <button type="button" onclick="selectRole('company')" id="role-company" class="role-btn bg-white text-gray-600 border border-gray-300 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-building text-xs text-blue-400"></i> Company
+                    </button>
+                    <button type="button" onclick="selectRole('admin')" id="role-admin" class="role-btn bg-white text-gray-600 border border-gray-300 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-shield-alt text-xs text-blue-400"></i> Admin
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Email:</label>
+                <input type="email" id="email" placeholder="your email" class="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400 transition-colors">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Password:</label>
+                <input type="password" id="password" placeholder="your password..." class="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm placeholder-gray-400 transition-colors">
+            </div>
+            
+            <button type="submit" class="w-full bg-[#2563eb] text-white font-semibold py-2.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm">
+                Login
+            </button>
+            
+            <div id="error-msg" class="text-red-500 text-sm mt-3 text-center hidden font-medium bg-red-50 py-2 rounded">Invalid credentials. Please try again.</div>
+            <div id="pending-msg" class="text-orange-500 text-sm mt-3 text-center hidden font-medium bg-orange-50 py-2 rounded">Company account pending admin verification.</div>
+        </form>
+        
+        <div class="mt-8 text-center text-sm border-t border-gray-100 pt-6">
+            <span class="text-gray-500">Don't have an account?</span>
+            <a href="signup.html" class="text-[#2563eb] font-semibold hover:underline ml-1">Sign up</a>
+        </div>
+    </div>
+    
+    <div class="mt-8 text-xs text-gray-400">
+        © 2025 InternHub
+    </div>
+    
+    <script src="js/mockData.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let selectedRole = 'user';
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.className = 'role-btn bg-white text-gray-600 border border-gray-300 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors';
+                const icon = btn.querySelector('i');
+                if(btn.id === 'role-user') icon.className = 'fas fa-user text-xs text-blue-400';
+                if(btn.id === 'role-company') icon.className = 'fas fa-building text-xs text-blue-400';
+                if(btn.id === 'role-admin') icon.className = 'fas fa-shield-alt text-xs text-blue-400';
+            });
+            const activeBtn = document.getElementById(`role-${role}`);
+            activeBtn.className = 'role-btn bg-[#2563eb] text-white border border-[#2563eb] py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors';
+            activeBtn.querySelector('i').className = activeBtn.querySelector('i').className.replace('text-blue-400', 'text-white');
+            
+            document.getElementById('error-msg').classList.add('hidden');
+            document.getElementById('pending-msg').classList.add('hidden');
+        }
+        
+        selectRole('user');
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            let users = [];
+            if(selectedRole === 'user') users = getDB('internhub_users');
+            else if(selectedRole === 'company') users = getDB('internhub_companies');
+            else if(selectedRole === 'admin') users = getDB('internhub_admins');
+            
+            let user = users.find(u => u.email === email && u.password === password);
+            if (!user && users.length > 0) {
+                user = (selectedRole === 'company') ? users.find(u => u.status !== 'Pending') || users[0] : users[0];
+            }
+
+            document.getElementById('error-msg').classList.add('hidden');
+            document.getElementById('pending-msg').classList.add('hidden');
+            
+            if (user) {
+                if(selectedRole === 'company' && user.status === 'Pending') {
+                    document.getElementById('pending-msg').classList.remove('hidden');
+                    return;
+                }
+                setCurrentUser(user);
+                if(selectedRole === 'user') window.location.href = 'pages/user/dashboard.html';
+                else if(selectedRole === 'company') window.location.href = 'pages/company/dashboard.html';
+                else if(selectedRole === 'admin') window.location.href = 'pages/admin/dashboard.html';
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+        
+        // Auto redirect if already logged in
+        const currentUser = getCurrentUser();
+        if(currentUser) {
+            if(currentUser.role === 'user') window.location.href = 'pages/user/dashboard.html';
+            else if(currentUser.role === 'company') window.location.href = 'pages/company/dashboard.html';
+            else if(currentUser.role === 'admin') window.location.href = 'pages/admin/dashboard.html';
+        }
+    </script>
+</body>
+</html>

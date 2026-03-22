@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <!-- Template content wrappers -->
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-[#2563eb] flex items-center gap-2">
+                    Welcome back, <span id="user-name-display">Student</span>! <span>👋</span>
+                </h1>
+                <p class="text-gray-500 text-sm mt-1">Here is your internship overview</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-md p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-gray-500 font-medium text-sm">Profile</span>
+                        <i class="fas fa-chart-line text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-profile">85%</h3>
+                        <p class="text-[11px] text-[#10b981] font-medium mt-1">Complete your profile!</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-gray-500 font-medium text-sm">Applications</span>
+                        <i class="fas fa-file-alt text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-apps">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-gray-500 font-medium text-sm">Matches</span>
+                        <i class="fas fa-bolt text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-matches">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-gray-500 font-medium text-sm">Available</span>
+                        <i class="fas fa-suitcase text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-available">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Completion Bar -->
+            <div class="bg-white rounded-md border border-gray-100 shadow-sm p-6 mb-8">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-bold text-gray-800 text-sm">Profile Completion:</span>
+                    <span class="font-bold text-blue-600 text-sm" id="progress-text">85%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3.5">
+                    <div class="bg-[#10b981] h-3.5 rounded-full transition-all duration-500" id="progress-bar" style="width: 85%"></div>
+                </div>
+            </div>
+
+            <!-- Quick Match Banner -->
+            <a href="quick.html" class="block bg-blue-50 rounded-md border border-blue-200 p-4 mb-8 flex items-center justify-between hover:bg-blue-100 transition cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-bolt text-orange-400 text-xl ml-2"></i>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Quick Match</h4>
+                        <p class="text-xs text-gray-500">Find internships matching your skills</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right text-gray-400 mr-2"></i>
+            </a>
+
+            <!-- Recommended -->
+            <div class="mb-4">
+                <h3 class="font-bold text-sm text-gray-800 mb-4">Recommended for you:</h3>
+                <div class="grid grid-cols-3 gap-6" id="recommended-container">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = requireAuth('user');
+            if(!user) return;
+
+            initLayout('user', 'dashboard', '');
+            
+            document.getElementById('user-name-display').innerText = user.name.split(' ')[0];
+            document.getElementById('stat-profile').innerText = user.completion + '%';
+            document.getElementById('progress-text').innerText = user.completion + '%';
+            document.getElementById('progress-bar').style.width = user.completion + '%';
+
+            const apps = getDB('internhub_applications').filter(a => a.userId === user.id);
+            document.getElementById('stat-apps').innerText = apps.length;
+
+            const internships = getDB('internhub_internships');
+            document.getElementById('stat-available').innerText = internships.length;
+
+            let matchesCount = 0;
+            const recommendedContainer = document.getElementById('recommended-container');
+            
+            // Sort internships by match
+            const sortedInternships = internships.map(internship => {
+                const matchPercentage = calculateMatch(user.skills, internship.skills);
+                if(matchPercentage >= 70) matchesCount++;
+                return { ...internship, matchPercentage };
+            }).sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+            document.getElementById('stat-matches').innerText = matchesCount;
+
+            sortedInternships.slice(0, 3).forEach(internship => {
+                const matchClass = getMatchCircleClass(internship.matchPercentage);
+                const applied = apps.some(a => a.internshipId === internship.id);
+                
+                const skillsHtml = (internship.skills || []).slice(0, 4).map(skill => {
+                    const hasSkill = user.skills && user.skills.some(os => os.toLowerCase() === skill.toLowerCase());
+                    return `<span class="px-2 py-0.5 text-[10px] font-bold rounded ${hasSkill ? 'bg-[#10b981] text-white' : 'bg-red-500 text-white'}">${skill}</span>`;
+                }).join('');
+
+                const actionHtml = applied 
+                    ? `<div class="bg-gray-100 text-[#10b981] border border-gray-200 px-3 py-1 rounded text-xs font-bold flex items-center gap-1"><i class="fas fa-check"></i> Applied</div>`
+                    : `<a href="internships.html" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition"><i class="fas fa-paper-plane text-[10px]"></i> Apply Now</a>`;
+
+                const typeTagHtml = internship.workType 
+                    ? `<div class="bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1 rounded text-xs font-medium">${internship.workType}</div>` 
+                    : '';
+
+                const isExternal = internship.type === 'External';
+
+                const cardHtml = `
+                    <div class="bg-white border border-gray-200 rounded-md p-5 shadow-sm hover:shadow-md transition flex flex-col h-full relative">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center font-bold text-gray-500 text-lg border border-gray-200">
+                                    ${internship.companyName.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-sm leading-tight">${internship.title}</h3>
+                                    <p class="text-gray-500 text-xs mt-1">${internship.companyName}</p>
+                                </div>
+                            </div>
+                            <div class="match-circle ${matchClass} shrink-0 bg-white ml-2 z-10">
+                                ${internship.matchPercentage}%
+                            </div>
+                        </div>
+
+                        ${isExternal ? `
+                            <p class="text-xs text-blue-600 font-medium mb-3"><i class="fas fa-external-link-alt mr-1"></i> External Opportunity</p>
+                        ` : `
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-500 mb-4 font-medium">
+                                <div class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-red-400"></i> ${internship.location}</div>
+                                <div class="flex items-center gap-1.5"><i class="far fa-clock text-gray-400"></i> ${internship.duration}</div>
+                                <div class="flex items-center gap-1.5"><i class="fas fa-rupee-sign text-yellow-500"></i> ${internship.stipend}</div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mb-5 mt-auto">
+                                ${skillsHtml}
+                            </div>
+                        `}
+                        
+                        <div class="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
+                            ${isExternal 
+                                ? `<a href="${internship.link}" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs font-bold transition">Apply Externally <i class="fas fa-external-link-alt ml-1"></i></a>`
+                                : actionHtml
+                            }
+                            ${!isExternal ? typeTagHtml : ''}
+                        </div>
+                    </div>
+                `;
+                recommendedContainer.innerHTML += cardHtml;
+            });
+        });
+    </script>
+</body>
+</html>

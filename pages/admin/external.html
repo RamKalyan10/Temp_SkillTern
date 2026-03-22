@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - External Opportunities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">External Opportunities</h1>
+                <p class="text-gray-500 text-sm mt-1">Add off-platform links for top tier companies</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm mb-8 max-w-4xl p-6">
+                <h3 class="font-bold text-gray-800 text-[13px] mb-5 border-b border-gray-100 pb-2">Add New Link</h3>
+                <form id="externalForm" onsubmit="handleAdd(event)">
+                    <div class="grid grid-cols-2 gap-6 mb-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">COMPANY NAME</label>
+                            <input type="text" id="ext-company" required placeholder="e.g. Google, Microsoft" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">ROLE TITLE</label>
+                            <input type="text" id="ext-role" required placeholder="e.g. Software Engineering Intern" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">URL LINK</label>
+                            <input type="url" id="ext-link" required placeholder="https://careers.google.com/..." class="w-full px-4 py-2 border border-blue-200 bg-blue-50 rounded-md text-[13px] text-blue-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">STIPEND / SALARY</label>
+                            <input type="text" id="ext-stipend" required placeholder="e.g. ₹50,000/mo or Not Disclosed" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-[13px] font-semibold flex items-center gap-2 shadow-sm transition w-full justify-center">
+                        <i class="fas fa-plus-circle"></i> Add Opportunity
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden" id="table-container">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">COMPANY</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">ROLE</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">STIPEND</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="save-msg" class="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg transform transition-transform translate-y-20 opacity-0 flex items-center gap-3 font-medium text-sm z-50">
+                <i class="fas fa-check-circle text-green-400 text-lg"></i> Added Successfully
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const admin = requireAuth('admin');
+            if(!admin) return;
+
+            initLayout('admin', 'external', 'External Links');
+            fetchAndRender();
+        });
+
+        function fetchAndRender() {
+            const externalInternships = getDB('internhub_internships').filter(i => i.type === 'External');
+            
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            externalInternships.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).forEach(i => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white';
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <span class="font-bold text-gray-800 text-sm block mb-0.5">${i.companyName}</span>
+                        <a href="${i.link}" target="_blank" class="text-xs text-blue-500 hover:underline"><i class="fas fa-link mr-1"></i> Visit Link</a>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-gray-600 font-medium">${i.title}</td>
+                    <td class="py-4 px-6 text-sm">
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-semibold border border-gray-200">${i.stipend}</span>
+                    </td>
+                    <td class="py-4 px-6 text-right w-32">
+                        <button onclick="deleteListing('${i.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded transition shadow-sm" title="Delete Listing"><i class="fas fa-trash text-xs"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleAdd(e) {
+            e.preventDefault();
+
+            const cName = document.getElementById('ext-company').value;
+            const rTitle = document.getElementById('ext-role').value;
+            const lUrl = document.getElementById('ext-link').value;
+            const stpd = document.getElementById('ext-stipend').value;
+
+            const newExternal = {
+                id: generateId(),
+                title: rTitle,
+                companyName: cName,
+                stipend: stpd,
+                link: lUrl,
+                type: 'External',
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+
+            const db = getDB('internhub_internships');
+            db.push(newExternal);
+            setDB('internhub_internships', db);
+
+            document.getElementById('externalForm').reset();
+            fetchAndRender();
+
+            const toast = document.getElementById('save-msg');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function deleteListing(id) {
+            if(confirm('Delete external link?')) {
+                let db = getDB('internhub_internships');
+                db = db.filter(i => i.id !== id);
+                setDB('internhub_internships', db);
+                fetchAndRender();
+            }
+        }
+    </script>
+</body>
+</html>

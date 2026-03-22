@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">Admin Dashboard</h1>
+                <p class="text-gray-500 text-sm mt-1">Platform overview and statistics</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-md border border-gray-200 p-5 shadow-sm flex items-center justify-between hover:border-blue-300 transition h-28">
+                    <div>
+                        <span class="text-gray-500 font-bold text-[11px] tracking-widest uppercase block mb-1">TOTAL USERS</span>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-users">0</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded flex items-center justify-center text-xl">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md border border-gray-200 p-5 shadow-sm flex items-center justify-between hover:border-blue-300 transition h-28">
+                    <div>
+                        <span class="text-gray-500 font-bold text-[11px] tracking-widest uppercase block mb-1">COMPANIES</span>
+                        <h3 class="text-2xl font-bold text-gray-800 flex items-end gap-2">
+                            <span id="stat-companies">0</span>
+                            <span class="text-[10px] text-orange-500 font-semibold mb-1" id="stat-pending-companies">0 pending</span>
+                        </h3>
+                    </div>
+                    <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded flex items-center justify-center text-xl">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md border border-gray-200 p-5 shadow-sm flex items-center justify-between hover:border-blue-300 transition h-28">
+                    <div>
+                        <span class="text-gray-500 font-bold text-[11px] tracking-widest uppercase block mb-1">INTERNSHIPS</span>
+                        <h3 class="text-2xl font-bold text-gray-800 flex items-end gap-2">
+                            <span id="stat-interns">0</span>
+                            <span class="text-[10px] text-green-500 font-semibold mb-1" id="stat-external">0 external</span>
+                        </h3>
+                    </div>
+                    <div class="w-10 h-10 bg-green-50 text-green-600 rounded flex items-center justify-center text-xl">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md border border-gray-200 p-5 shadow-sm flex items-center justify-between hover:border-blue-300 transition h-28">
+                    <div>
+                        <span class="text-gray-500 font-bold text-[11px] tracking-widest uppercase block mb-1">APPLICATIONS</span>
+                        <h3 class="text-2xl font-bold text-gray-800" id="stat-apps">0</h3>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded flex items-center justify-center text-xl">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8">
+                <!-- Recent Activity Box -->
+                <div class="bg-white border border-gray-200 rounded-md shadow-sm">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-sm">Recent Signups</h3>
+                        <a href="users.html" class="text-blue-600 font-semibold text-[11px] hover:underline uppercase tracking-wide">View All</a>
+                    </div>
+                    <div class="p-0 divide-y divide-gray-100" id="recent-users">
+                        <!-- Injected -->
+                    </div>
+                </div>
+
+                <!-- Pending Approvals Box -->
+                <div class="bg-white border border-gray-200 rounded-md shadow-sm">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">Company Approvals <span class="bg-red-500 text-white px-2 py-0.5 rounded text-[10px]" id="badge-pending">0</span></h3>
+                        <a href="companies.html" class="text-blue-600 font-semibold text-[11px] hover:underline uppercase tracking-wide">Manage</a>
+                    </div>
+                    <div class="p-0 divide-y divide-gray-100" id="pending-companies-list">
+                        <!-- Injected -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const admin = requireAuth('admin');
+            if(!admin) return;
+
+            initLayout('admin', 'dashboard', 'Admin Overview');
+            
+            const users = getDB('internhub_users');
+            const companies = getDB('internhub_companies');
+            const internships = getDB('internhub_internships');
+            const apps = getDB('internhub_applications');
+
+            document.getElementById('stat-users').innerText = users.length;
+            document.getElementById('stat-companies').innerText = companies.length;
+            
+            const pendingCompanies = companies.filter(c => c.status === 'Pending');
+            document.getElementById('stat-pending-companies').innerText = `${pendingCompanies.length} pending`;
+            document.getElementById('badge-pending').innerText = pendingCompanies.length;
+
+            document.getElementById('stat-interns').innerText = internships.length;
+            const externalInter = internships.filter(i => i.type === 'External');
+            document.getElementById('stat-external').innerText = `${externalInter.length} external`;
+
+            document.getElementById('stat-apps').innerText = apps.length;
+
+            // Populate recent users
+            const recentUsersContainer = document.getElementById('recent-users');
+            const sortedUsers = [...users].reverse().slice(0, 4);
+            if(sortedUsers.length === 0) {
+                recentUsersContainer.innerHTML = '<div class="p-5 text-center text-sm text-gray-500">No recent users.</div>';
+            } else {
+                sortedUsers.forEach(u => {
+                    recentUsersContainer.innerHTML += `
+                        <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 text-xs">${u.name.charAt(0)}</div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 text-sm leading-tight">${u.name}</p>
+                                    <p class="text-xs text-gray-500">${u.email}</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-400 font-medium">Student</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Populate pending companies
+            const pendingListContainer = document.getElementById('pending-companies-list');
+            if(pendingCompanies.length === 0) {
+                pendingListContainer.innerHTML = `
+                    <div class="p-10 flex flex-col items-center text-center text-gray-400">
+                        <i class="fas fa-check-circle text-4xl mb-3 text-green-200"></i>
+                        <h4 class="font-bold text-gray-600">All Caught Up</h4>
+                        <p class="text-xs mt-1">No companies awaiting approval.</p>
+                    </div>
+                `;
+            } else {
+                pendingCompanies.slice(0, 4).forEach(c => {
+                    pendingListContainer.innerHTML += `
+                        <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-orange-100 border border-orange-200 flex items-center justify-center font-bold text-orange-600 text-xs">${c.name.charAt(0)}</div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 text-sm leading-tight">${c.name}</p>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Pending Review</p>
+                                </div>
+                            </div>
+                            <a href="companies.html" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow-sm transition">Review</a>
+                        </div>
+                    `;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Manage Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800 tracking-tight">Manage Users</h1>
+                    <p class="text-gray-500 text-sm mt-1">View and manage student accounts</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">USER</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">EMAIL</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">LOCATION</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">PROFILE</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected -->
+                    </tbody>
+                </table>
+                <div id="no-data" class="hidden text-center py-10 text-gray-500 text-sm">
+                    No users found.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const admin = requireAuth('admin');
+            if(!admin) return;
+
+            initLayout('admin', 'users', 'Manage Students');
+            fetchAndRender();
+        });
+
+        function fetchAndRender() {
+            const users = getDB('internhub_users');
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            if(users.length === 0) {
+                document.getElementById('no-data').classList.remove('hidden');
+                return;
+            }
+
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white';
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shadow-sm">
+                                ${u.name.charAt(0)}
+                            </div>
+                            <span class="font-bold text-gray-800 text-sm">${u.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-gray-600">${u.email}</td>
+                    <td class="py-4 px-6 text-sm text-gray-500">${u.location || '-'}</td>
+                    <td class="py-4 px-6">
+                        <div class="flex items-center gap-2 w-24">
+                            <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                                <div class="bg-green-500 h-1.5 rounded-full" style="width: ${u.completion}%"></div>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500 w-8">${u.completion}%</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-right">
+                        <button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-1.5 rounded transition shadow-sm" title="Delete User"><i class="fas fa-trash text-sm"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteUser(id) {
+            if(confirm('Are you sure you want to permanently delete this user account?')) {
+                let db = getDB('internhub_users');
+                db = db.filter(u => u.id !== id);
+                setDB('internhub_users', db);
+
+                // Mock cascade
+                let apps = getDB('internhub_applications');
+                apps = apps.filter(a => a.userId !== id);
+                setDB('internhub_applications', apps);
+
+                fetchAndRender();
+            }
+        }
+    </script>
+</body>
+</html>

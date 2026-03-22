@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Post Internship</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">Post New Internship</h1>
+                <p class="text-gray-500 text-sm mt-1">Create a new listing to attract top talent</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm mb-6 max-w-4xl p-8">
+                <form id="postForm" onsubmit="handlePost(event)">
+                    <div class="mb-5">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">INTERNSHIP TITLE</label>
+                        <input type="text" id="post-title" required placeholder="e.g. Frontend Developer Intern" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">LOCATION</label>
+                            <input type="text" id="post-location" required placeholder="e.g. Remote, Mumbai" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">WORK TYPE</label>
+                            <select id="post-type" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors bg-white">
+                                <option value="Remote">Remote</option>
+                                <option value="Onsite">Onsite</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">DURATION</label>
+                            <input type="text" id="post-duration" required placeholder="e.g. 3 months" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">STIPEND</label>
+                            <input type="text" id="post-stipend" required placeholder="e.g. ₹15,000/mo" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">REQUIRED SKILLS (Comma Separated)</label>
+                        <input type="text" id="post-skills" required placeholder="e.g. React, Node.js, Design" class="w-full px-4 py-2 border border-gray-200 rounded-md text-[13px] text-gray-800 focus:outline-none focus:border-blue-500 transition-colors">
+                        <p class="text-[10px] text-gray-400 mt-1.5 italic">Used for our smart matching algorithm to find you the best candidates.</p>
+                    </div>
+
+                    <div class="flex justify-end pt-4 border-t border-gray-100">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-md text-[13px] font-semibold flex items-center gap-2 shadow-sm transition">
+                            <i class="fas fa-paper-plane"></i> Post Internship
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="save-msg" class="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg transform transition-transform translate-y-20 opacity-0 flex items-center gap-3 font-medium text-sm z-50">
+                <i class="fas fa-check-circle text-green-400 text-lg"></i> Internship Posted Successfully
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        let currentUser;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = requireAuth('company');
+            if(!currentUser) return;
+
+            initLayout('company', 'post', currentUser.name);
+        });
+
+        function handlePost(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('post-title').value;
+            const location = document.getElementById('post-location').value;
+            const type = document.getElementById('post-type').value;
+            const duration = document.getElementById('post-duration').value;
+            const stipend = document.getElementById('post-stipend').value;
+            const skillsStr = document.getElementById('post-skills').value;
+
+            const newInternship = {
+                id: generateId(),
+                title: title,
+                companyId: currentUser.id,
+                companyName: currentUser.name,
+                location: location,
+                duration: duration,
+                stipend: stipend,
+                type: 'Internal',
+                workType: type,
+                skills: skillsStr.split(',').map(s => s.trim()).filter(s => s),
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+
+            const internships = getDB('internhub_internships');
+            internships.push(newInternship);
+            setDB('internhub_internships', internships);
+
+            document.getElementById('postForm').reset();
+
+            const toast = document.getElementById('save-msg');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

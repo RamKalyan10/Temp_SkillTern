@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Company Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">Company Dashboard</h1>
+                <p class="text-gray-500 text-sm mt-1">Manage your listings and applicants</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-md border border-gray-200 p-6 shadow-sm flex flex-col justify-between hover:border-blue-300 transition h-32">
+                    <div class="flex justify-between items-start">
+                        <span class="text-gray-600 font-semibold text-[13px]">Internships</span>
+                        <i class="fas fa-briefcase text-blue-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-bold text-gray-800 tracking-tight" id="stat-internships">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md border border-gray-200 p-6 shadow-sm flex flex-col justify-between hover:border-blue-300 transition h-32">
+                    <div class="flex justify-between items-start">
+                        <span class="text-gray-600 font-semibold text-[13px]">Applicants</span>
+                        <i class="fas fa-users text-blue-600 text-lg border border-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-bold text-gray-800 tracking-tight" id="stat-apps">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-md border border-gray-200 p-6 shadow-sm flex flex-col justify-between hover:border-blue-300 transition h-32">
+                    <div class="flex justify-between items-start">
+                        <span class="text-gray-600 font-semibold text-[13px]">Open Positions</span>
+                        <i class="fas fa-plus-circle text-blue-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-bold text-gray-800 tracking-tight" id="stat-open">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post New Box -->
+            <a href="post.html" class="block bg-blue-50 border border-blue-100 rounded-md p-6 mb-8 hover:bg-blue-100 transition cursor-pointer flex items-center gap-4 shadow-sm">
+                <div class="bg-blue-600 w-10 h-10 rounded text-white flex items-center justify-center text-lg shadow-sm">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm">Post New Internship</h3>
+                    <p class="text-gray-500 text-xs mt-0.5">Create a new listing to attract talent</p>
+                </div>
+            </a>
+
+            <!-- Your Listings -->
+            <div>
+                <h3 class="font-bold text-gray-800 text-[15px] mb-4">Your Listings</h3>
+                <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden flex flex-col gap-0 divide-y divide-gray-100" id="listings-container">
+                    <!-- Injected here -->
+                </div>
+                <div id="no-listings" class="hidden text-center py-10 bg-white border border-gray-200 rounded-md text-gray-500 text-sm">
+                    No active internship listings found.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = requireAuth('company');
+            if(!user) return;
+
+            initLayout('company', 'dashboard', user.name);
+            
+            const allInternships = getDB('internhub_internships').filter(i => i.companyId === user.id);
+            const allApps = getDB('internhub_applications').filter(a => a.companyId === user.id);
+            
+            document.getElementById('stat-internships').innerText = allInternships.length;
+            document.getElementById('stat-apps').innerText = allApps.length;
+            document.getElementById('stat-open').innerText = allInternships.length; // Simplified for mock
+
+            const container = document.getElementById('listings-container');
+            
+            if(allInternships.length === 0) {
+                document.getElementById('no-listings').classList.remove('hidden');
+                return;
+            }
+
+            allInternships.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(intern => {
+                const dateHtml = formatDate(intern.createdAt) 
+                    ? `<span class="text-xs text-gray-500 whitespace-nowrap">${formatDate(intern.createdAt)}</span>` 
+                    : '';
+
+                container.innerHTML += `
+                    <div class="p-6 hover:bg-gray-50 transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">${intern.title}</h4>
+                            <p class="text-xs text-gray-500 mt-1">${intern.location} • ${intern.stipend}</p>
+                        </div>
+                        ${dateHtml}
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>

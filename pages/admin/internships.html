@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Manage Internships</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800 tracking-tight">Active Internships</h1>
+                    <p class="text-gray-500 text-sm mt-1">Review all active opportunities on the platform</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden" id="table-container">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">TITLE & COMPANY</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">LOCATION / TYPE</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">SOURCE</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <div id="no-data" class="hidden text-center py-10 text-gray-500 text-sm">
+                    No active internships found.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const admin = requireAuth('admin');
+            if(!admin) return;
+
+            initLayout('admin', 'internships', 'Global Internships');
+            fetchAndRender();
+        });
+
+        function fetchAndRender() {
+            const allInternships = getDB('internhub_internships');
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            if(allInternships.length === 0) {
+                document.getElementById('no-data').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('no-data').classList.add('hidden');
+            }
+
+            allInternships.forEach(i => {
+                const sourceTypeHtml = i.type === 'External' 
+                    ? `<span class="bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-external-link-alt mr-1"></i> External</span>`
+                    : `<span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Internal</span>`;
+
+                const typeHtml = i.type !== 'External' 
+                    ? `<span class="text-xs text-gray-500 block mt-1"><i class="fas fa-map-marker-alt text-red-400 mr-1 w-3"></i> ${i.location} • ${i.workType}</span>`
+                    : `<span class="text-xs text-gray-500 block mt-1 italic">Off-site posting</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white';
+                tr.innerHTML = `
+                    <td class="py-4 px-6">
+                        <span class="font-bold text-gray-800 text-sm block mb-0.5">${i.title}</span>
+                        <span class="text-xs text-blue-600 font-medium">${i.companyName}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <p class="text-sm text-gray-800 font-medium">${i.stipend}</p>
+                        ${typeHtml}
+                    </td>
+                    <td class="py-4 px-6">${sourceTypeHtml}</td>
+                    <td class="py-4 px-6 text-right w-32">
+                        <button onclick="deleteInternship('${i.id}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-1.5 rounded transition shadow-sm" title="Delete Listing"><i class="fas fa-trash text-xs"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteInternship(id) {
+            if(confirm('Are you sure you want to permanently remove this internship listing?')) {
+                let db = getDB('internhub_internships');
+                db = db.filter(i => i.id !== id);
+                setDB('internhub_internships', db);
+
+                // Cascade delete apps
+                let apps = getDB('internhub_applications');
+                apps = apps.filter(a => a.internshipId !== id);
+                setDB('internhub_applications', apps);
+
+                fetchAndRender();
+            }
+        }
+    </script>
+</body>
+</html>

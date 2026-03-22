@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - My Applications</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">My Applications</h1>
+                <p class="text-gray-500 text-sm mt-1 mb-5" id="avail-text">0 applications submitted</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-gray-100">
+                            <th class="py-3 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">INTERNSHIP</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">COMPANY</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">DATE</th>
+                            <th class="py-3 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <div id="no-data" class="hidden text-center py-10 text-gray-500 text-sm">
+                    No applications submitted yet.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = requireAuth('user');
+            if(!user) return;
+
+            initLayout('user', 'applications', '');
+
+            const apps = getDB('internhub_applications').filter(a => a.userId === user.id);
+            
+            document.getElementById('avail-text').innerText = `${apps.length} applications submitted`;
+
+            const tbody = document.getElementById('table-body');
+            
+            if(apps.length === 0) {
+                document.getElementById('no-data').classList.remove('hidden');
+                return;
+            }
+
+            // Sort by date descending
+            apps.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            apps.forEach(app => {
+                let statusBadge = '';
+                if(app.status === 'Shortlisted') {
+                    statusBadge = `<span class="bg-green-100 text-green-700 px-3 py-1 rounded-sm text-xs font-semibold">Shortlisted</span>`;
+                } else if(app.status === 'Applied') {
+                    statusBadge = `<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-sm text-xs font-semibold">Applied</span>`;
+                } else if(app.status === 'Rejected') {
+                    statusBadge = `<span class="bg-red-100 text-red-700 px-3 py-1 rounded-sm text-xs font-semibold">Rejected</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 text-sm font-medium text-gray-800">${app.internshipTitle}</td>
+                    <td class="py-4 px-6 text-sm text-gray-500">${app.companyName}</td>
+                    <td class="py-4 px-6 text-sm text-gray-500">${app.date}</td>
+                    <td class="py-4 px-6">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
+</body>
+</html>

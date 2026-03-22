@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub - Applicants Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+    
+    <!-- Modal for User Details -->
+    <div id="userModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="p-6 border-b border-gray-100 bg-gray-50 flex items-center gap-4">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold" id="modal-avatar">
+                    U
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800" id="modal-name">User Name</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="modal-email">user@email.com</p>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">LOCATION</h4>
+                        <p class="text-sm font-medium text-gray-800" id="modal-loc">Unknown</p>
+                    </div>
+                    <div>
+                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">PHONE</h4>
+                        <p class="text-sm font-medium text-gray-800" id="modal-phone">Unknown</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">BIO</h4>
+                    <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded" id="modal-bio">No bio provided.</p>
+                </div>
+                <div class="mb-6">
+                    <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">SKILLS</h4>
+                    <div class="flex flex-wrap gap-2 mt-2" id="modal-skills">
+                        <!-- Skills injected -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button onclick="closeModal()" class="bg-white border border-gray-300 px-5 py-2 rounded text-sm text-gray-600 font-medium hover:bg-gray-50 transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar-container"></div>
+    <div class="flex-1 flex flex-col ml-56 min-w-0 h-screen overflow-hidden bg-[#f4f7f9]">
+        <div id="navbar-container"></div>
+        <main class="flex-1 overflow-y-auto p-8" id="main-content">
+            
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight">Review Applicants</h1>
+                <p class="text-gray-500 text-sm mt-1">Accept or reject candidates for your listings</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">CANDIDATE</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">POSITION</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">MATCH %</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest">STATUS</th>
+                            <th class="py-3 px-6 text-[11px] font-bold text-gray-500 uppercase tracking-widest text-right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows injected -->
+                    </tbody>
+                </table>
+                <div id="no-data" class="hidden text-center py-10 text-gray-500 text-sm">
+                    No applicants found.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../js/mockData.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/components.js"></script>
+    <script>
+        let currentUser;
+        let apps = [];
+        let usersData = [];
+        let internshipsData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = requireAuth('company');
+            if(!currentUser) return;
+
+            initLayout('company', 'applicants', currentUser.name);
+            fetchAndRender();
+        });
+
+        function fetchAndRender() {
+            apps = getDB('internhub_applications').filter(a => a.companyId === currentUser.id);
+            usersData = getDB('internhub_users');
+            internshipsData = getDB('internhub_internships');
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            if(apps.length === 0) {
+                document.getElementById('no-data').classList.remove('hidden');
+                return;
+            }
+
+            // Sort so 'Applied' comes first, then by date.
+            apps.sort((a,b) => {
+                if(a.status === 'Applied' && b.status !== 'Applied') return -1;
+                if(b.status === 'Applied' && a.status !== 'Applied') return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            apps.forEach(app => {
+                const applicantData = usersData.find(u => u.id === app.userId);
+                const internshipData = internshipsData.find(i => i.id === app.internshipId);
+                
+                let matchPerc = 0;
+                let matchClass = 'bg-gray-100 text-gray-700';
+                
+                if(applicantData && internshipData) {
+                    matchPerc = calculateMatch(applicantData.skills, internshipData.skills);
+                    if(matchPerc >= 75) matchClass = 'bg-green-100 text-green-700';
+                    else if(matchPerc >= 50) matchClass = 'bg-yellow-100 text-yellow-700';
+                    else matchClass = 'bg-red-100 text-red-700';
+                }
+
+                let statusBadge = '';
+                if(app.status === 'Shortlisted') {
+                    statusBadge = `<span class="bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded text-xs font-semibold"><i class="fas fa-check-circle mr-1"></i> Shortlisted</span>`;
+                } else if(app.status === 'Applied') {
+                    statusBadge = `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded text-xs font-semibold">Ready for Review</span>`;
+                } else if(app.status === 'Rejected') {
+                    statusBadge = `<span class="bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded text-xs font-semibold"><i class="fas fa-times-circle mr-1"></i> Rejected</span>`;
+                }
+
+                const actionsHtml = app.status === 'Applied' 
+                    ? `
+                        <button onclick="updateStatus('${app.id}', 'Shortlisted')" class="text-[#10b981] hover:bg-green-50 border border-green-200 p-1.5 rounded transition mr-1" title="Shortlist Candidate"><i class="fas fa-check text-sm"></i></button>
+                        <button onclick="updateStatus('${app.id}', 'Rejected')" class="text-red-500 hover:bg-red-50 border border-red-200 p-1.5 rounded transition" title="Reject Candidate"><i class="fas fa-times text-sm"></i></button>
+                    `
+                    : `<span class="text-gray-400 text-xs font-medium">Reviewed</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white';
+                tr.innerHTML = `
+                    <td class="py-4 px-6 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+                                ${app.userName.charAt(0)}
+                            </div>
+                            <button onclick="openUserModal('${app.userId}')" class="font-bold text-gray-800 hover:text-blue-600 transition text-left">${app.userName}</button>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-gray-600 font-medium">${app.internshipTitle}</td>
+                    <td class="py-4 px-6 text-sm">
+                        <span class="${matchClass} border border-transparent px-2 py-0.5 rounded font-bold">${matchPerc}%</span>
+                    </td>
+                    <td class="py-4 px-6">${statusBadge}</td>
+                    <td class="py-4 px-6 text-right w-32">
+                        ${actionsHtml}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStatus(appId, newStatus) {
+            let allApplicationsDb = getDB('internhub_applications');
+            const target = allApplicationsDb.find(a => a.id === appId);
+            if(target) {
+                target.status = newStatus;
+                setDB('internhub_applications', allApplicationsDb);
+                fetchAndRender();
+            }
+        }
+
+        function openUserModal(userId) {
+            const applicants = getDB('internhub_users');
+            const u = applicants.find(x => x.id === userId);
+            if(!u) return;
+
+            document.getElementById('modal-avatar').innerText = u.name.charAt(0);
+            document.getElementById('modal-name').innerText = u.name;
+            document.getElementById('modal-email').innerText = u.email;
+            document.getElementById('modal-loc').innerText = u.location || 'Not provided';
+            document.getElementById('modal-phone').innerText = u.phone || 'Not provided';
+            document.getElementById('modal-bio').innerText = u.bio || 'No bio provided.';
+            
+            const skillsDiv = document.getElementById('modal-skills');
+            if(u.skills && u.skills.length > 0) {
+                skillsDiv.innerHTML = u.skills.map(s => `<span class="bg-[#10b981] text-white px-2 py-1 rounded text-[11px] font-bold shadow-sm">${s}</span>`).join('');
+            } else {
+                skillsDiv.innerHTML = '<span class="text-xs text-gray-500 italic">No skills added</span>';
+            }
+
+            document.getElementById('userModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('userModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
