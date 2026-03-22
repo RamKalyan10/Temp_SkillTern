@@ -66,8 +66,8 @@
                 <div class="p-6">
                     <h3 class="font-bold text-gray-800 text-sm mb-4 border-b border-gray-100 pb-2">Technical Skills</h3>
                     <div class="mb-3">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">ADD SKILLS (Comma separated)</label>
-                        <input type="text" id="prof-skills-input" placeholder="e.g. React, Python, UI Design" class="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-md text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">ADD SKILLS (Type & Press Enter)</label>
+                        <input type="text" id="prof-skills-input" placeholder="e.g. React, Python (Press Enter to add)" class="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-md text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div class="flex flex-wrap gap-2 mt-3" id="prof-skills-display">
                         <!-- Skill tags -->
@@ -87,6 +87,7 @@
     <script src="../../js/components.js"></script>
     <script>
         let currentUser;
+        let skillsList = [];
         
         document.addEventListener('DOMContentLoaded', () => {
             currentUser = requireAuth('user');
@@ -102,25 +103,46 @@
             document.getElementById('prof-bio').value = currentUser.bio || '';
             document.getElementById('prof-objective').value = currentUser.careerObjective || '';
             
-            if(currentUser.skills) {
-                document.getElementById('prof-skills-input').value = currentUser.skills.join(', ');
-                renderSkills(currentUser.skills);
-            }
+            skillsList = currentUser.skills ? [...currentUser.skills] : [];
+            renderSkills();
 
-            document.getElementById('prof-skills-input').addEventListener('input', (e) => {
-                const arr = e.target.value.split(',').map(s => s.trim()).filter(s => s);
-                renderSkills(arr);
+            const input = document.getElementById('prof-skills-input');
+            input.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = input.value.trim();
+                    if(val && !skillsList.includes(val)) {
+                        skillsList.push(val);
+                        renderSkills();
+                    }
+                    input.value = '';
+                }
+            });
+            input.addEventListener('blur', () => {
+                const val = input.value.trim();
+                if(val && !skillsList.includes(val)) {
+                    skillsList.push(val);
+                    renderSkills();
+                }
+                input.value = '';
             });
         });
 
-        function renderSkills(skillsArr) {
+        function removeSkill(idx) {
+            skillsList.splice(idx, 1);
+            renderSkills();
+        }
+
+        function renderSkills() {
             const display = document.getElementById('prof-skills-display');
-            if(skillsArr.length === 0) {
+            if(skillsList.length === 0) {
                 display.innerHTML = '<span class="text-xs text-gray-400 italic">No skills added yet</span>';
                 return;
             }
-            display.innerHTML = skillsArr.map(s => `
-                <span class="bg-[#10b981] text-white px-2.5 py-1 rounded text-[11px] font-bold shadow-sm">${s}</span>
+            display.innerHTML = skillsList.map((s, i) => `
+                <span class="bg-[#10b981] text-white px-2.5 py-1.5 rounded text-xs font-bold inline-flex items-center gap-1.5 shadow-sm">
+                    ${s} <i class="fas fa-times cursor-pointer opacity-75 hover:opacity-100" onclick="removeSkill(${i})"></i>
+                </span>
             `).join('');
         }
 
@@ -130,7 +152,7 @@
             currentUser.location = document.getElementById('prof-location').value;
             currentUser.bio = document.getElementById('prof-bio').value;
             currentUser.careerObjective = document.getElementById('prof-objective').value;
-            currentUser.skills = document.getElementById('prof-skills-input').value.split(',').map(s => s.trim()).filter(s => s);
+            currentUser.skills = skillsList;
             
             let filledFields = 0;
             const totalFields = 6;
