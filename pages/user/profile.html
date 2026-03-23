@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Profile</title>
+    <title>SkillTern - Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -166,11 +166,11 @@
 
             setCurrentUser(currentUser);
             
-            const users = getDB('internhub_users');
+            const users = getDB('skilltern_users');
             const idx = users.findIndex(u => u.id === currentUser.id);
             if(idx > -1) {
                 users[idx] = currentUser;
-                setDB('internhub_users', users);
+                setDB('skilltern_users', users);
             }
 
             // Show toast

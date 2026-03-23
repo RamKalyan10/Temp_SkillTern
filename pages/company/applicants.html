@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Applicants Review</title>
+    <title>SkillTern - Applicants Review</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -104,9 +104,9 @@
         });
 
         function fetchAndRender() {
-            apps = getDB('internhub_applications').filter(a => a.companyId === currentUser.id);
-            usersData = getDB('internhub_users');
-            internshipsData = getDB('internhub_internships');
+            apps = getDB('skilltern_applications').filter(a => a.companyId === currentUser.id);
+            usersData = getDB('skilltern_users');
+            internshipsData = getDB('skilltern_internships');
 
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -178,17 +178,17 @@
         }
 
         function updateStatus(appId, newStatus) {
-            let allApplicationsDb = getDB('internhub_applications');
+            let allApplicationsDb = getDB('skilltern_applications');
             const target = allApplicationsDb.find(a => a.id === appId);
             if(target) {
                 target.status = newStatus;
-                setDB('internhub_applications', allApplicationsDb);
+                setDB('skilltern_applications', allApplicationsDb);
                 fetchAndRender();
             }
         }
 
         function openUserModal(userId) {
-            const applicants = getDB('internhub_users');
+            const applicants = getDB('skilltern_users');
             const u = applicants.find(x => x.id === userId);
             if(!u) return;
 

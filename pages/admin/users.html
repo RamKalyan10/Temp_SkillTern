@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Manage Users</title>
+    <title>SkillTern - Manage Users</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -58,7 +58,7 @@
         });
 
         function fetchAndRender() {
-            const users = getDB('internhub_users');
+            const users = getDB('skilltern_users');
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             
@@ -99,14 +99,14 @@
 
         function deleteUser(id) {
             if(confirm('Are you sure you want to permanently delete this user account?')) {
-                let db = getDB('internhub_users');
+                let db = getDB('skilltern_users');
                 db = db.filter(u => u.id !== id);
-                setDB('internhub_users', db);
+                setDB('skilltern_users', db);
 
                 // Mock cascade
-                let apps = getDB('internhub_applications');
+                let apps = getDB('skilltern_applications');
                 apps = apps.filter(a => a.userId !== id);
-                setDB('internhub_applications', apps);
+                setDB('skilltern_applications', apps);
 
                 fetchAndRender();
             }

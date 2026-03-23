@@ -68,10 +68,10 @@ const initialApplications = [
 ];
 
 // Initialize Local Storage if empty
-if (!localStorage.getItem('internhub_users')) {
-    localStorage.setItem('internhub_users', JSON.stringify(initialUsers));
-    localStorage.setItem('internhub_companies', JSON.stringify(initialCompanies));
-    localStorage.setItem('internhub_admins', JSON.stringify(initialAdmins));
-    localStorage.setItem('internhub_internships', JSON.stringify(initialInternships));
-    localStorage.setItem('internhub_applications', JSON.stringify(initialApplications));
+if (!localStorage.getItem('skilltern_users')) {
+    localStorage.setItem('skilltern_users', JSON.stringify(initialUsers));
+    localStorage.setItem('skilltern_companies', JSON.stringify(initialCompanies));
+    localStorage.setItem('skilltern_admins', JSON.stringify(initialAdmins));
+    localStorage.setItem('skilltern_internships', JSON.stringify(initialInternships));
+    localStorage.setItem('skilltern_applications', JSON.stringify(initialApplications));
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Manage Internships</title>
+    <title>SkillTern - Manage Internships</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -57,7 +57,7 @@
         });
 
         function fetchAndRender() {
-            const allInternships = getDB('internhub_internships');
+            const allInternships = getDB('skilltern_internships');
 
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -100,14 +100,14 @@
 
         function deleteInternship(id) {
             if(confirm('Are you sure you want to permanently remove this internship listing?')) {
-                let db = getDB('internhub_internships');
+                let db = getDB('skilltern_internships');
                 db = db.filter(i => i.id !== id);
-                setDB('internhub_internships', db);
+                setDB('skilltern_internships', db);
 
                 // Cascade delete apps
-                let apps = getDB('internhub_applications');
+                let apps = getDB('skilltern_applications');
                 apps = apps.filter(a => a.internshipId !== id);
-                setDB('internhub_applications', apps);
+                setDB('skilltern_applications', apps);
 
                 fetchAndRender();
             }

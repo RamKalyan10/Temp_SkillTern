@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Manage Listings</title>
+    <title>SkillTern - Manage Listings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -66,8 +66,8 @@
         });
 
         function fetchAndRender() {
-            allInternships = getDB('internhub_internships').filter(i => i.companyId === currentUser.id);
-            allApps = getDB('internhub_applications');
+            allInternships = getDB('skilltern_internships').filter(i => i.companyId === currentUser.id);
+            allApps = getDB('skilltern_applications');
 
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -98,14 +98,14 @@
 
         function deleteListing(id) {
             if(confirm("Are you sure you want to delete this listing?")) {
-                let db = getDB('internhub_internships');
+                let db = getDB('skilltern_internships');
                 db = db.filter(i => i.id !== id);
-                setDB('internhub_internships', db);
+                setDB('skilltern_internships', db);
                 
                 // Mock cascading delete logic for applications
-                let apps = getDB('internhub_applications');
+                let apps = getDB('skilltern_applications');
                 apps = apps.filter(a => a.internshipId !== id);
-                setDB('internhub_applications', apps);
+                setDB('skilltern_applications', apps);
 
                 fetchAndRender();
             }

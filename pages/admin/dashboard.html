@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Admin Dashboard</title>
+    <title>SkillTern - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -106,10 +106,10 @@
 
             initLayout('admin', 'dashboard', 'Admin Overview');
             
-            const users = getDB('internhub_users');
-            const companies = getDB('internhub_companies');
-            const internships = getDB('internhub_internships');
-            const apps = getDB('internhub_applications');
+            const users = getDB('skilltern_users');
+            const companies = getDB('skilltern_companies');
+            const internships = getDB('skilltern_internships');
+            const apps = getDB('skilltern_applications');
 
             document.getElementById('stat-users').innerText = users.length;
             document.getElementById('stat-companies').innerText = companies.length;

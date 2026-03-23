@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Login</title>
+    <title>SkillTern - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -12,7 +12,7 @@
     <div class="mb-8 text-center">
         <div class="flex items-center justify-center gap-3 mb-2">
             <i class="fas fa-graduation-cap text-3xl text-gray-800"></i>
-            <h1 class="text-4xl font-extrabold text-[#2563eb]">InternHub</h1>
+            <h1 class="text-4xl font-extrabold text-[#2563eb]">SkillTern</h1>
             <i class="fas fa-graduation-cap text-3xl text-orange-400"></i>
         </div>
         <p class="text-gray-500 italic text-sm">~ the best internship website ~</p>
@@ -63,7 +63,7 @@
     </div>
     
     <div class="mt-8 text-xs text-gray-400">
-        © 2025 InternHub
+        © 2025 SkillTern
     </div>
     
     <script src="js/mockData.js"></script>
@@ -95,9 +95,9 @@
             const password = document.getElementById('password').value;
             
             let users = [];
-            if(selectedRole === 'user') users = getDB('internhub_users');
-            else if(selectedRole === 'company') users = getDB('internhub_companies');
-            else if(selectedRole === 'admin') users = getDB('internhub_admins');
+            if(selectedRole === 'user') users = getDB('skilltern_users');
+            else if(selectedRole === 'company') users = getDB('skilltern_companies');
+            else if(selectedRole === 'admin') users = getDB('skilltern_admins');
             
             let user = users.find(u => u.email === email && u.password === password);
             if (!user && users.length > 0) {

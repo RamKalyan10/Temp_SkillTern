@@ -9,15 +9,15 @@ function setDB(key, data) {
 
 // Authentication Utilities
 function getCurrentUser() {
-    return JSON.parse(localStorage.getItem('internhub_current_user'));
+    return JSON.parse(localStorage.getItem('skilltern_current_user'));
 }
 
 function setCurrentUser(user) {
-    localStorage.setItem('internhub_current_user', JSON.stringify(user));
+    localStorage.setItem('skilltern_current_user', JSON.stringify(user));
 }
 
 function logout() {
-    localStorage.removeItem('internhub_current_user');
+    localStorage.removeItem('skilltern_current_user');
     const pathDepth = window.location.pathname.split('/').reverse();
     if(pathDepth[0] === 'dashboard.html' && pathDepth[1] === 'user') window.location.href = '../../index.html';
     else if(pathDepth[0] === 'dashboard.html' && pathDepth[1] === 'company') window.location.href = '../../index.html';

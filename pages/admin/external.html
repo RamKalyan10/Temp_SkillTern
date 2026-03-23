@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - External Opportunities</title>
+    <title>SkillTern - External Opportunities</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -87,7 +87,7 @@
         });
 
         function fetchAndRender() {
-            const externalInternships = getDB('internhub_internships').filter(i => i.type === 'External');
+            const externalInternships = getDB('skilltern_internships').filter(i => i.type === 'External');
             
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -130,9 +130,9 @@
                 createdAt: new Date().toISOString().split('T')[0]
             };
 
-            const db = getDB('internhub_internships');
+            const db = getDB('skilltern_internships');
             db.push(newExternal);
-            setDB('internhub_internships', db);
+            setDB('skilltern_internships', db);
 
             document.getElementById('externalForm').reset();
             fetchAndRender();
@@ -146,9 +146,9 @@
 
         function deleteListing(id) {
             if(confirm('Delete external link?')) {
-                let db = getDB('internhub_internships');
+                let db = getDB('skilltern_internships');
                 db = db.filter(i => i.id !== id);
-                setDB('internhub_internships', db);
+                setDB('skilltern_internships', db);
                 fetchAndRender();
             }
         }

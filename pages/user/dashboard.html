@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Student Dashboard</title>
+    <title>SkillTern - Student Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -116,10 +116,10 @@
             document.getElementById('progress-text').innerText = user.completion + '%';
             document.getElementById('progress-bar').style.width = user.completion + '%';
 
-            const apps = getDB('internhub_applications').filter(a => a.userId === user.id);
+            const apps = getDB('skilltern_applications').filter(a => a.userId === user.id);
             document.getElementById('stat-apps').innerText = apps.length;
 
-            const internships = getDB('internhub_internships');
+            const internships = getDB('skilltern_internships');
             document.getElementById('stat-available').innerText = internships.length;
 
             let matchesCount = 0;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Quick Match</title>
+    <title>SkillTern - Quick Match</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -53,8 +53,8 @@
 
             initLayout('user', 'quick', '');
 
-            const internships = getDB('internhub_internships');
-            const apps = getDB('internhub_applications').filter(a => a.userId === user.id);
+            const internships = getDB('skilltern_internships');
+            const apps = getDB('skilltern_applications').filter(a => a.userId === user.id);
             const container = document.getElementById('quick-matches-container');
             
             let matchedCount = 0;
@@ -131,7 +131,7 @@
 
         function apply(iId, iTitle, cId, cName) {
             const user = getCurrentUser();
-            const applications = getDB('internhub_applications');
+            const applications = getDB('skilltern_applications');
             
             applications.push({
                 id: generateId(),
@@ -145,7 +145,7 @@
                 status: 'Applied'
             });
             
-            setDB('internhub_applications', applications);
+            setDB('skilltern_applications', applications);
             
             const toast = document.getElementById('save-msg');
             toast.classList.remove('translate-y-20', 'opacity-0');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Company Dashboard</title>
+    <title>SkillTern - Company Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -88,8 +88,8 @@
 
             initLayout('company', 'dashboard', user.name);
             
-            const allInternships = getDB('internhub_internships').filter(i => i.companyId === user.id);
-            const allApps = getDB('internhub_applications').filter(a => a.companyId === user.id);
+            const allInternships = getDB('skilltern_internships').filter(i => i.companyId === user.id);
+            const allApps = getDB('skilltern_applications').filter(a => a.companyId === user.id);
             
             document.getElementById('stat-internships').innerText = allInternships.length;
             document.getElementById('stat-apps').innerText = allApps.length;

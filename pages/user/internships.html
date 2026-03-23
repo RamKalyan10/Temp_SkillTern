@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - All Internships</title>
+    <title>SkillTern - All Internships</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -61,8 +61,8 @@
 
             initLayout('user', 'internships', '');
 
-            allInternships = getDB('internhub_internships');
-            userApplications = getDB('internhub_applications').filter(a => a.userId === currentUser.id);
+            allInternships = getDB('skilltern_internships');
+            userApplications = getDB('skilltern_applications').filter(a => a.userId === currentUser.id);
             
             document.getElementById('avail-text').innerText = `${allInternships.length} opportunities available`;
 
@@ -158,7 +158,7 @@
         }
 
         function apply(iId, iTitle, cId, cName) {
-            const applications = getDB('internhub_applications');
+            const applications = getDB('skilltern_applications');
             
             applications.push({
                 id: generateId(),
@@ -172,7 +172,7 @@
                 status: 'Applied'
             });
             
-            setDB('internhub_applications', applications);
+            setDB('skilltern_applications', applications);
             
             const toast = document.getElementById('save-msg');
             toast.classList.remove('translate-y-20', 'opacity-0');
@@ -181,7 +181,7 @@
             }, 3000);
             
             // update local data to toggle to Applied immediately
-            userApplications = getDB('internhub_applications').filter(a => a.userId === currentUser.id);
+            userApplications = getDB('skilltern_applications').filter(a => a.userId === currentUser.id);
             filterInternships(); // re-render
         }
     </script>

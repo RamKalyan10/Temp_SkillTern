@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternHub - Manage Companies</title>
+    <title>SkillTern - Manage Companies</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../css/styles.css">
@@ -81,7 +81,7 @@
         }
 
         function fetchAndRender() {
-            allCompanies = getDB('internhub_companies');
+            allCompanies = getDB('skilltern_companies');
             const pendingCount = allCompanies.filter(c => c.status === 'Pending').length;
             document.getElementById('badge-pending').innerText = pendingCount;
 
@@ -147,30 +147,30 @@
         }
 
         function updateStatus(id, newStatus) {
-            let db = getDB('internhub_companies');
+            let db = getDB('skilltern_companies');
             const target = db.find(c => c.id === id);
             if(target) {
                 target.status = newStatus;
-                setDB('internhub_companies', db);
+                setDB('skilltern_companies', db);
                 fetchAndRender();
             }
         }
 
         function deleteCompany(id) {
             if(confirm('Are you sure you want to permanently delete this company and all its listings?')) {
-                let db = getDB('internhub_companies');
+                let db = getDB('skilltern_companies');
                 db = db.filter(c => c.id !== id);
-                setDB('internhub_companies', db);
+                setDB('skilltern_companies', db);
 
                 // Cascade delete listings
-                let internships = getDB('internhub_internships');
+                let internships = getDB('skilltern_internships');
                 internships = internships.filter(i => i.companyId !== id);
-                setDB('internhub_internships', internships);
+                setDB('skilltern_internships', internships);
 
                 // Cascade delete apps
-                let apps = getDB('internhub_applications');
+                let apps = getDB('skilltern_applications');
                 apps = apps.filter(a => a.companyId !== id);
-                setDB('internhub_applications', apps);
+                setDB('skilltern_applications', apps);
 
                 fetchAndRender();
             }

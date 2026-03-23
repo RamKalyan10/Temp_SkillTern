@@ -5,7 +5,7 @@ function renderNavbar(titleClass, titleText) {
     const navbarHtml = `
         <div class="flex justify-between items-center bg-[#f4f7f9] border-b border-gray-200 px-6 py-3 z-10 relative">
             <div class="flex items-center gap-4 w-full max-w-2xl">
-                <span class="text-[#2563eb] font-bold text-lg mr-2">InternHub</span>
+                <span class="text-[#2563eb] font-bold text-lg mr-2">SkillTern</span>
                 <span class="text-gray-500 text-xs mt-1 mr-4">${titleText}</span>
                 <div class="relative flex-1">
                     <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
@@ -80,7 +80,7 @@ function renderSidebar(role, activePage) {
             <div class="h-[60px] border-b border-gray-200 flex items-center px-5 gap-3 bg-white">
                 <i class="${topIcon} text-xl"></i>
                 <div class="flex flex-col justify-center">
-                    <h1 class="font-bold text-gray-900 leading-none text-[15px]">InternHub</h1>
+                    <h1 class="font-bold text-gray-900 leading-none text-[15px]">SkillTern</h1>
                     <p class="text-[10px] text-gray-500 mt-1">${title}</p>
                 </div>
             </div>
